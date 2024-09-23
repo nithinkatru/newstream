@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'login_page.dart'; // Import the LoginPage if needed
-import 'gradient_button.dart'; // Import the GradientButton
+import './gradient_button.dart'; // Import the GradientButton
 import 'package:another_flushbar/flushbar.dart'; // Import Flushbar
 
 class SignupPage extends StatefulWidget {

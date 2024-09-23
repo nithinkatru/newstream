@@ -2,10 +2,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'signup_page.dart'; // Import the SignupPage
-import 'gradient_button.dart'; // Import the GradientButton
+import './signup_page.dart'; // Import the SignupPage
+import './gradient_button.dart'; // Import the GradientButton
 import 'package:another_flushbar/flushbar.dart'; // Import Flushbar
-import 'home_page.dart'; // Import HomePage (optional if using routes)
+import './home_page.dart'; // Import HomePage (optional if using routes)
 
 class LoginPage extends StatefulWidget {
   @override
@@ -56,7 +56,7 @@ class _LoginPageState extends State<LoginPage>
 
   @override
   void dispose() {
-    // Dispose controllers to free up resources
+
     _emailController.dispose();
     _passwordController.dispose();
     _controller.dispose();
@@ -83,7 +83,7 @@ class _LoginPageState extends State<LoginPage>
       return;
     }
 
-    // Example validation (replace with real authentication logic)
+
     if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email)) {
       Flushbar(
         title: 'Invalid Email',
@@ -116,7 +116,7 @@ class _LoginPageState extends State<LoginPage>
       return;
     }
 
-    // If all validations pass
+
     Flushbar(
       title: 'Success',
       message: 'Login Successful!',
@@ -133,23 +133,7 @@ class _LoginPageState extends State<LoginPage>
       Navigator.pushReplacementNamed(context, '/home');
     });
 
-    // Alternatively, navigate immediately without waiting for Flushbar to dismiss
-    /*
-    Flushbar(
-      title: 'Success',
-      message: 'Login Successful!',
-      duration: Duration(seconds: 3),
-      backgroundColor: Colors.green,
-      icon: Icon(
-        Icons.check_circle,
-        size: 28.0,
-        color: Colors.white,
-      ),
-      leftBarIndicatorColor: Colors.white,
-    )..show(context);
 
-    Navigator.pushReplacementNamed(context, '/home');
-    */
   }
 
   @override

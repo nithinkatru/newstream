@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'gradient_button.dart';
+import './gradient_button.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:another_flushbar/flushbar.dart';
 
@@ -135,7 +135,7 @@ class _HomePageState extends State<HomePage> {
           children: [
             // App Logo/Branding
             Icon(
-              Icons.stream, // Replace with your own logo if available
+              Icons.stream,
               color: Colors.blue,
               size: 32,
             ),
@@ -269,15 +269,15 @@ class _HomePageState extends State<HomePage> {
             label: 'Library',
           ),
           BottomNavigationBarItem(
-            icon: FaIcon(FontAwesomeIcons.images), // Replaced 'browseGallery' with 'images'
+            icon: FaIcon(FontAwesomeIcons.images),
             label: 'Browse',
           ),
           BottomNavigationBarItem(
-            icon: FaIcon(FontAwesomeIcons.cog), // Replaced 'gear' with 'cog'
+            icon: FaIcon(FontAwesomeIcons.cog),
             label: 'Subscriptions',
           ),
           BottomNavigationBarItem(
-            icon: FaIcon(FontAwesomeIcons.cog), // If 'gear' still causes issues, use 'cog'
+            icon: FaIcon(FontAwesomeIcons.cog),
             label: 'Settings',
           ),
         ],
