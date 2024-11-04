@@ -1,79 +1,46 @@
 {
   "project_info": {
-    "project_number": "72599672691",
-    "project_id": "nextstram",
-    "storage_bucket": "nextstram.appspot.com"
+    "project_number": "505918935158",
+    "firebase_url": "https://driving-licence-fe70e-default-rtdb.firebaseio.com",
+    "project_id": "driving-licence-fe70e",
+    "storage_bucket": "driving-licence-fe70e.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:72599672691:android:b704e45d7b22fd89c2d706",
+        "mobilesdk_app_id": "1:505918935158:android:bc6e25ff0e8758afbacf57",
         "android_client_info": {
-          "package_name": "com.example.nextstream"
+          "package_name": "com.example.myapplication"
         }
       },
-      "oauth_client": [
-        {
-          "client_id": "72599672691-u6so7ftsk8a35fsp4g1pv9oekoce12as.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
+      "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDLSO4uzlJDRyCR72bDZwfCgLn1IqoQfRI"
+          "current_key": "AIzaSyBDbeoIctMRYlFcGIbCFdRBX38GEvifr7c"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "72599672691-u6so7ftsk8a35fsp4g1pv9oekoce12as.apps.googleusercontent.com",
-              "client_type": 3
-            },
-            {
-              "client_id": "72599672691-rutosu1icqk9makilo2pa80mqkklnovl.apps.googleusercontent.com",
-              "client_type": 2,
-              "ios_info": {
-                "bundle_id": "com.example.nextstream1"
-              }
-            }
-          ]
+          "other_platform_oauth_client": []
         }
       }
     },
     {
       "client_info": {
-        "mobilesdk_app_id": "1:72599672691:android:d9d3feedc0b53adfc2d706",
+        "mobilesdk_app_id": "1:505918935158:android:2d01fece2b2fce49bacf57",
         "android_client_info": {
           "package_name": "com.example.nextstream1"
         }
       },
-      "oauth_client": [
-        {
-          "client_id": "72599672691-u6so7ftsk8a35fsp4g1pv9oekoce12as.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
+      "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDLSO4uzlJDRyCR72bDZwfCgLn1IqoQfRI"
+          "current_key": "AIzaSyBDbeoIctMRYlFcGIbCFdRBX38GEvifr7c"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "72599672691-u6so7ftsk8a35fsp4g1pv9oekoce12as.apps.googleusercontent.com",
-              "client_type": 3
-            },
-            {
-              "client_id": "72599672691-rutosu1icqk9makilo2pa80mqkklnovl.apps.googleusercontent.com",
-              "client_type": 2,
-              "ios_info": {
-                "bundle_id": "com.example.nextstream1"
-              }
-            }
-          ]
+          "other_platform_oauth_client": []
         }
       }
     }

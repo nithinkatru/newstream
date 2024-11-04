@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'dart:async'; // For Timer
-import 'login_page.dart'; // Import the LoginPage
 
 class SplashScreen extends StatefulWidget {
   @override
@@ -33,11 +32,9 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     // Start the animation
     _animationController.forward();
 
-    // Navigate to LoginPage after the animation completes
+    // Navigate to HomePage after the animation completes
     Timer(Duration(seconds: 3), () {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => LoginPage()),
-      );
+      Navigator.of(context).pushReplacementNamed('/home');
     });
   }
 

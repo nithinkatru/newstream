@@ -1,11 +1,9 @@
 // lib/login_page.dart
 
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import './signup_page.dart'; // Import the SignupPage
-import './gradient_button.dart'; // Import the GradientButton
-import 'package:another_flushbar/flushbar.dart'; // Import Flushbar
-import './home_page.dart'; // Import HomePage (optional if using routes)
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_web_auth/flutter_web_auth.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart'; // For FontAwesome icons
 
 class LoginPage extends StatefulWidget {
   @override
@@ -17,330 +15,334 @@ class _LoginPageState extends State<LoginPage>
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  // Animation variables
-  late AnimationController _controller;
-  late Animation<Offset> _slideAnimation;
+  bool _isLoading = false;
+
+  // Animation Controllers
+  late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
 
   @override
   void initState() {
     super.initState();
 
-    // Initialize the animation controller
-    _controller = AnimationController(
+    // Initialize Animation Controller
+    _animationController = AnimationController(
       vsync: this,
       duration: Duration(milliseconds: 800),
     );
 
-    // Define slide animation
-    _slideAnimation = Tween<Offset>(
-      begin: Offset(0, 0.3),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeOut,
-    ));
-
-    // Define fade animation
-    _fadeAnimation = Tween<double>(
-      begin: 0,
-      end: 1,
-    ).animate(CurvedAnimation(
-      parent: _controller,
+    // Define a Fade Animation
+    _fadeAnimation = CurvedAnimation(
+      parent: _animationController,
       curve: Curves.easeIn,
-    ));
+    );
 
-    // Start the animations
-    _controller.forward();
+    // Start the animation
+    _animationController.forward();
   }
 
   @override
   void dispose() {
-
+    // Dispose controllers when the widget is disposed
+    _animationController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
-    _controller.dispose();
     super.dispose();
   }
 
-  void _handleLogin() {
+  void _handleLogin() async {
     String email = _emailController.text.trim();
-    String password = _passwordController.text;
+    String password = _passwordController.text.trim();
 
     if (email.isEmpty || password.isEmpty) {
-      Flushbar(
-        title: 'Error',
-        message: 'Please enter both email and password',
-        duration: Duration(seconds: 3),
-        backgroundColor: Colors.redAccent,
-        icon: Icon(
-          Icons.error_outline,
-          size: 28.0,
-          color: Colors.white,
-        ),
-        leftBarIndicatorColor: Colors.white,
-      )..show(context);
+      _showError('Please enter both email and password');
       return;
     }
 
-
-    if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email)) {
-      Flushbar(
-        title: 'Invalid Email',
-        message: 'Please enter a valid email address',
-        duration: Duration(seconds: 3),
-        backgroundColor: Colors.orangeAccent,
-        icon: Icon(
-          Icons.warning,
-          size: 28.0,
-          color: Colors.white,
-        ),
-        leftBarIndicatorColor: Colors.white,
-      )..show(context);
-      return;
-    }
-
-    if (password.length < 6) {
-      Flushbar(
-        title: 'Weak Password',
-        message: 'Password should be at least 6 characters',
-        duration: Duration(seconds: 3),
-        backgroundColor: Colors.orangeAccent,
-        icon: Icon(
-          Icons.warning,
-          size: 28.0,
-          color: Colors.white,
-        ),
-        leftBarIndicatorColor: Colors.white,
-      )..show(context);
-      return;
-    }
-
-
-    Flushbar(
-      title: 'Success',
-      message: 'Login Successful!',
-      duration: Duration(seconds: 3),
-      backgroundColor: Colors.green,
-      icon: Icon(
-        Icons.check_circle,
-        size: 28.0,
-        color: Colors.white,
-      ),
-      leftBarIndicatorColor: Colors.white,
-    )..show(context).then((_) {
-      // Navigate to HomePage after Flushbar is dismissed
-      Navigator.pushReplacementNamed(context, '/home');
+    setState(() {
+      _isLoading = true;
     });
 
-
+    try {
+      // Sign in using Firebase Authentication
+      await FirebaseAuth.instance
+          .signInWithEmailAndPassword(email: email, password: password);
+      Navigator.pushReplacementNamed(context, '/home');
+    } catch (e) {
+      _showError('Login failed. Please try again.');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Login to Nexstream'),
-        centerTitle: true,
-        backgroundColor: Colors.white,
-        elevation: 0,
-        titleTextStyle: TextStyle(color: Colors.black, fontSize: 20),
+  Future<void> _handleGitHubLogin() async {
+    try {
+      setState(() {
+        _isLoading = true;
+      });
+
+      // Step 1: Start the GitHub OAuth login process
+      final result = await FlutterWebAuth.authenticate(
+        url:
+        'https://github.com/login/oauth/authorize?client_id=<YOUR_GITHUB_CLIENT_ID>&scope=read:user,user:email',
+        callbackUrlScheme: 'nexstream',
+      );
+
+      // Step 2: Extract the code from the result
+      final code = Uri.parse(result).queryParameters['code'];
+
+      // Step 3: Exchange the code for Firebase credentials
+      if (code != null) {
+        final AuthCredential credential = GithubAuthProvider.credential(code);
+        await FirebaseAuth.instance.signInWithCredential(credential);
+        Navigator.pushReplacementNamed(context, '/home');
+      } else {
+        _showError('GitHub login failed. No authorization code received.');
+      }
+    } catch (e) {
+      _showError('GitHub login failed. Please try again.');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Widget _buildLogo() {
+    return FadeTransition(
+      opacity: _fadeAnimation,
+      child: Column(
+        children: [
+          // Use the app logo as in the homepage
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.stream,
+                color: Colors.blueAccent,
+                size: 60,
+              ),
+              SizedBox(width: 8),
+              Text(
+                'Nexstream',
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 16),
+          Text(
+            'Welcome Back!',
+            style: TextStyle(
+              fontSize: 24,
+              color: Colors.grey[700],
+            ),
+          ),
+        ],
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SizedBox(height: 40),
-            SlideTransition(
-              position: _slideAnimation,
-              child: FadeTransition(
-                opacity: _fadeAnimation,
-                child: Icon(
-                  FontAwesomeIcons.user,
-                  size: 100,
-                  color: Colors.blue,
-                ),
-              ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String hintText,
+    required IconData icon,
+    bool isPassword = false,
+  }) {
+    return FadeTransition(
+      opacity: _fadeAnimation,
+      child: Container(
+        height: 60, // Increased height
+        child: TextField(
+          controller: controller,
+          obscureText: isPassword,
+          style: TextStyle(color: Colors.black),
+          decoration: InputDecoration(
+            prefixIcon: Icon(icon, color: Colors.grey[700]),
+            hintText: hintText,
+            hintStyle: TextStyle(color: Colors.grey[500]),
+            filled: true,
+            fillColor: Colors.grey[200],
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8), // Less rounded corners
+              borderSide: BorderSide.none,
             ),
-            SizedBox(height: 20),
-            SlideTransition(
-              position: _slideAnimation,
-              child: FadeTransition(
-                opacity: _fadeAnimation,
-                child: TextField(
-                  controller: _emailController,
-                  decoration: InputDecoration(
-                    labelText: 'Email',
-                    hintText: 'Enter your email',
-                    prefixIcon: Icon(Icons.email),
-                  ),
-                  keyboardType: TextInputType.emailAddress,
-                ),
-              ),
-            ),
-            SizedBox(height: 20),
-            SlideTransition(
-              position: _slideAnimation,
-              child: FadeTransition(
-                opacity: _fadeAnimation,
-                child: TextField(
-                  controller: _passwordController,
-                  obscureText: true,
-                  decoration: InputDecoration(
-                    labelText: 'Password',
-                    hintText: 'Enter your password',
-                    prefixIcon: Icon(Icons.lock),
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(height: 40),
-            // Google Sign-in Button
-            SlideTransition(
-              position: _slideAnimation,
-              child: FadeTransition(
-                opacity: _fadeAnimation,
-                child: OutlinedButton.icon(
-                  icon: FaIcon(FontAwesomeIcons.google, color: Colors.red),
-                  label: Text(
-                    'Sign in with Google',
-                    style: TextStyle(color: Colors.black),
-                  ),
-                  onPressed: () {
-                    // Implement Google sign-in functionality
-                    _showGoogleSignInSnackBar();
-                  },
-                  style: OutlinedButton.styleFrom(
-                    minimumSize: Size(double.infinity, 50),
-                    side: BorderSide(color: Colors.grey),
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(height: 10),
-            // Facebook Sign-in Button
-            SlideTransition(
-              position: _slideAnimation,
-              child: FadeTransition(
-                opacity: _fadeAnimation,
-                child: OutlinedButton.icon(
-                  icon: FaIcon(FontAwesomeIcons.facebookF, color: Colors.blue[800]),
-                  label: Text(
-                    'Sign in with Facebook',
-                    style: TextStyle(color: Colors.black),
-                  ),
-                  onPressed: () {
-                    // Implement Facebook sign-in functionality
-                    _showFacebookSignInSnackBar();
-                  },
-                  style: OutlinedButton.styleFrom(
-                    minimumSize: Size(double.infinity, 50),
-                    side: BorderSide(color: Colors.grey),
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(height: 20),
-            // Stylish Gradient Login Button
-            SlideTransition(
-              position: _slideAnimation,
-              child: FadeTransition(
-                opacity: _fadeAnimation,
-                child: GradientButton(
-                  onPressed: _handleLogin,
-                  text: 'Login',
-                  icon: Icons.login, // Optional: Add an icon
-                  iconColor: Colors.white,
-                  gradient: LinearGradient(
-                    colors: [Colors.blue, Colors.blueAccent],
-                  ),
-                  height: 50.0,
-                  borderRadius: 25.0,
-                  fontSize: 18.0,
-                  textColor: Colors.white,
-                ),
-              ),
-            ),
-            SizedBox(height: 20),
-            // Navigation Buttons
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SlideTransition(
-                  position: _slideAnimation,
-                  child: FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: TextButton(
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/signup');
-                      },
-                      child: Text('Not Registered? Register Now'),
-                    ),
-                  ),
-                ),
-                SlideTransition(
-                  position: _slideAnimation,
-                  child: FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: TextButton(
-                      onPressed: () {
-                        // Implement forgot password functionality
-                        Flushbar(
-                          title: 'Forgot Password',
-                          message:
-                          'Forgot Password functionality is not implemented yet.',
-                          duration: Duration(seconds: 3),
-                          backgroundColor: Colors.blueAccent,
-                          icon: Icon(
-                            Icons.info_outline,
-                            size: 28.0,
-                            color: Colors.white,
-                          ),
-                          leftBarIndicatorColor: Colors.white,
-                        )..show(context);
-                      },
-                      child: Text('Forgot Password?'),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
+            contentPadding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+          ),
+          keyboardType: isPassword
+              ? TextInputType.visiblePassword
+              : TextInputType.emailAddress,
         ),
       ),
     );
   }
 
-  // Optional: Show SnackBar for Google Sign-In Button
-  void _showGoogleSignInSnackBar() {
-    Flushbar(
-      title: 'Google Sign-In',
-      message: 'Google sign-in functionality is not implemented yet.',
-      duration: Duration(seconds: 3),
-      backgroundColor: Colors.redAccent,
-      icon: FaIcon(
-        FontAwesomeIcons.google,
-        size: 28.0,
-        color: Colors.white,
+  Widget _buildLoginButton() {
+    return FadeTransition(
+      opacity: _fadeAnimation,
+      child: ElevatedButton(
+        onPressed: _handleLogin,
+        style: ElevatedButton.styleFrom(
+          primary: Colors.black, // Black background
+          onPrimary: Colors.white, // White text
+          padding: EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8), // Less rounded corners
+          ),
+          elevation: 5,
+        ),
+        child: Center(
+          child: Text(
+            'Login with Email',
+            style: TextStyle(fontSize: 18),
+          ),
+        ),
       ),
-      leftBarIndicatorColor: Colors.white,
-    )..show(context);
+    );
   }
 
-  // Optional: Show SnackBar for Facebook Sign-In Button
-  void _showFacebookSignInSnackBar() {
-    Flushbar(
-      title: 'Facebook Sign-In',
-      message: 'Facebook sign-in functionality is not implemented yet.',
-      duration: Duration(seconds: 3),
-      backgroundColor: Colors.blueAccent,
-      icon: FaIcon(
-        FontAwesomeIcons.facebookF,
-        size: 28.0,
-        color: Colors.white,
+  Widget _buildSocialLoginButton({
+    required String text,
+    required IconData icon,
+    required VoidCallback onPressed,
+    required Color color,
+  }) {
+    return FadeTransition(
+      opacity: _fadeAnimation,
+      child: ElevatedButton.icon(
+        icon: Icon(icon, color: Colors.white),
+        label: Text(
+          text,
+          style: TextStyle(fontSize: 16, color: Colors.white),
+        ),
+        onPressed: onPressed,
+        style: ElevatedButton.styleFrom(
+          primary: color, // Button color passed as parameter
+          padding: EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8), // Less rounded corners
+          ),
+          elevation: 5,
+        ),
       ),
-      leftBarIndicatorColor: Colors.white,
-    )..show(context);
+    );
+  }
+
+  Widget _buildDivider() {
+    return FadeTransition(
+      opacity: _fadeAnimation,
+      child: Row(
+        children: [
+          Expanded(
+            child: Divider(
+              color: Colors.grey[400],
+              thickness: 1,
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 8),
+            child: Text(
+              'OR',
+              style: TextStyle(color: Colors.grey[600]),
+            ),
+          ),
+          Expanded(
+            child: Divider(
+              color: Colors.grey[400],
+              thickness: 1,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSignupText() {
+    return FadeTransition(
+      opacity: _fadeAnimation,
+      child: GestureDetector(
+        onTap: () {
+          Navigator.pushNamed(context, '/signup');
+        },
+        child: RichText(
+          text: TextSpan(
+            text: "Don't have an account? ",
+            style: TextStyle(color: Colors.grey[700]),
+            children: [
+              TextSpan(
+                text: 'Sign up',
+                style: TextStyle(
+                  color: Colors.blueAccent,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Get the screen height for responsive design
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    return Scaffold(
+      // Use a solid background color for a professional look
+      backgroundColor: Colors.white,
+      body: Container(
+        height: screenHeight,
+        child: _isLoading
+            ? Center(child: CircularProgressIndicator())
+            : SingleChildScrollView(
+          padding: EdgeInsets.symmetric(horizontal: 32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(height: screenHeight * 0.1),
+              _buildLogo(),
+              SizedBox(height: 40),
+              _buildTextField(
+                controller: _emailController,
+                hintText: 'Email',
+                icon: Icons.email_outlined,
+              ),
+              SizedBox(height: 20),
+              _buildTextField(
+                controller: _passwordController,
+                hintText: 'Password',
+                icon: Icons.lock_outline,
+                isPassword: true,
+              ),
+              SizedBox(height: 30),
+              _buildLoginButton(),
+              SizedBox(height: 20),
+              _buildDivider(),
+              SizedBox(height: 20),
+              _buildSocialLoginButton(
+                text: 'Login with GitHub',
+                icon: FontAwesomeIcons.github,
+                onPressed: _handleGitHubLogin,
+                color: Colors.black, // GitHub's brand color
+              ),
+              SizedBox(height: 30),
+              _buildSignupText(),
+              SizedBox(height: screenHeight * 0.1),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
