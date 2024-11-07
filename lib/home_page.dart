@@ -1,8 +1,9 @@
+// lib/home_page.dart
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:another_flushbar/flushbar.dart';
+// Removed: import 'package:another_flushbar/flushbar.dart';
 import 'models/video.dart';
 import 'models/dashboard_response.dart';
 import 'services/api_service.dart';
@@ -66,7 +67,6 @@ class _HomePageState extends State<HomePage> {
     ),
   ];
 
-
   final List<String> categories = [
     'Movies',
     'TV Shows',
@@ -107,18 +107,24 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _showSnackBar(String title, String message, Color color, IconData icon) {
-    Flushbar(
-      title: title,
-      message: message,
-      duration: Duration(seconds: 3),
+    final snackBar = SnackBar(
       backgroundColor: color,
-      icon: Icon(
-        icon,
-        size: 28.0,
-        color: Colors.white,
+      duration: Duration(seconds: 3),
+      content: Row(
+        children: [
+          Icon(icon, color: Colors.white),
+          SizedBox(width: 16),
+          Expanded(
+            child: Text(
+              '$title: $message',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
       ),
-      leftBarIndicatorColor: Colors.white,
-    )..show(context);
+    );
+
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
   void _onVideoTap(Video video) {
@@ -264,8 +270,6 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 1,
         title: Row(
           children: [
             Icon(Icons.stream, color: Colors.blue, size: 32),
@@ -283,13 +287,14 @@ class _HomePageState extends State<HomePage> {
               icon: FaIcon(FontAwesomeIcons.bell, color: Colors.black),
               onPressed: _onNotificationTap,
             ),
-            // Updated the icon here
             IconButton(
               icon: FaIcon(FontAwesomeIcons.userCircle, color: Colors.black),
               onPressed: () => _onNavItemTapped(4),
             ),
           ],
         ),
+        backgroundColor: Colors.white,
+        elevation: 1,
         bottom: PreferredSize(
           preferredSize: Size.fromHeight(60),
           child: Padding(
@@ -350,7 +355,6 @@ class _HomePageState extends State<HomePage> {
             icon: FaIcon(FontAwesomeIcons.tv),
             label: 'Subscriptions',
           ),
-          // Updated the icon and label here
           BottomNavigationBarItem(
             icon: FaIcon(FontAwesomeIcons.userCircle),
             label: 'Dashboard',

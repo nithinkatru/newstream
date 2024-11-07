@@ -1,46 +1,44 @@
 name: nexstream
 description: A new Flutter project for a Nexstream login screen.
 
-# Prevent accidental publication to pub.dev.
 publish_to: 'none'
 
 version: 1.0.0+1
 
 environment:
-  sdk: '>=2.12.0 <3.0.0'
-  flutter: '>=1.20.0'
+  sdk: '>=3.0.0 <4.0.0'
+  flutter: '>=3.0.0'
 
 dependencies:
   flutter:
     sdk: flutter
-  http: ^0.13.5
+  http: ^0.13.6
   video_player: ^2.5.0
-  firebase_core: ^2.15.0
-  firebase_auth: ^4.6.0
-  flutter_web_auth: ^0.4.0
+  firebase_core: ^2.16.0
+  firebase_auth: ^4.8.0
+  flutter_web_auth_2: ^3.0.0
   provider: ^6.0.5
-  font_awesome_flutter: ^10.1.0
-  another_flushbar: ^1.10.30
-  carousel_slider: ^4.1.0
-  image_picker: ^0.8.4+4
-  dio: ^5.0.0
-  chewie: ^1.2.2
-  youtube_player_flutter: ^8.0.0
+  font_awesome_flutter: ^10.5.0
+#  another_flushbar: ^2.0.0
+  carousel_slider: ^4.2.1  # Updated version
+  image_picker: ^1.0.0
+  dio: ^5.2.1
+  chewie: ^1.7.0
+  youtube_player_flutter: ^8.1.0
   charts_flutter: ^0.12.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_lints: ^2.0.0
 
 flutter:
   uses-material-design: true
 
-  # Include any assets your application uses.
   assets:
     - assets/profile_placeholder.jpg
     - assets/sample_video.mp4
 
-  # Include any fonts you are using.
   fonts:
     - family: OpenSans
       fonts:
