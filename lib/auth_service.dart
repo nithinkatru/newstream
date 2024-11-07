@@ -1,13 +1,11 @@
 // lib/services/auth_service.dart
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_web_auth/flutter_web_auth.dart';
+import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-
   Stream<User?> get authStateChanges => _auth.authStateChanges();
-
 
   Future<User?> signInWithEmail(String email, String password) async {
     try {
@@ -21,12 +19,11 @@ class AuthService {
     }
   }
 
-
   Future<User?> signInWithGitHub() async {
     const String clientId = '<Your GitHub Client ID>';
     const String redirectUrl = 'https://<your-firebase-project-id>.firebaseapp.com/__/auth/handler';
 
-    final result = await FlutterWebAuth.authenticate(
+    final result = await FlutterWebAuth2.authenticate(
       url: 'https://github.com/login/oauth/authorize?client_id=$clientId&redirect_uri=$redirectUrl&scope=read:user',
       callbackUrlScheme: 'firebase',
     );
@@ -42,7 +39,6 @@ class AuthService {
 
     return null;
   }
-
 
   Future<void> signOut() async {
     await _auth.signOut();

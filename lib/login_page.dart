@@ -1,9 +1,8 @@
 // lib/login_page.dart
-
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_web_auth/flutter_web_auth.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart'; // For FontAwesome icons
+import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -84,7 +83,7 @@ class _LoginPageState extends State<LoginPage>
       });
 
       // Step 1: Start the GitHub OAuth login process
-      final result = await FlutterWebAuth.authenticate(
+      final result = await FlutterWebAuth2.authenticate(
         url:
         'https://github.com/login/oauth/authorize?client_id=<YOUR_GITHUB_CLIENT_ID>&scope=read:user,user:email',
         callbackUrlScheme: 'nexstream',
@@ -111,8 +110,24 @@ class _LoginPageState extends State<LoginPage>
   }
 
   void _showError(String message) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
+    final snackBar = SnackBar(
+      backgroundColor: Colors.red,
+      duration: Duration(seconds: 3),
+      content: Row(
+        children: [
+          Icon(Icons.error, color: Colors.white),
+          SizedBox(width: 16),
+          Expanded(
+            child: Text(
+              'Error: $message',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
   Widget _buildLogo() {
