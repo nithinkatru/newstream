@@ -14,13 +14,13 @@ class DashboardResponse {
   });
 
   factory DashboardResponse.fromJson(Map<String, dynamic> json) {
-    var videosJson = json['videos'] as List;
-    List<Video> videosList = videosJson.map((video) => Video.fromJson(video)).toList();
-
     return DashboardResponse(
-      videos: videosList,
-      nextPage: json['nextPage'],
-      hasMore: json['hasMore'],
+      videos: (json['videos'] as List<dynamic>?)
+          ?.map((videoJson) => Video.fromJson(videoJson))
+          .toList() ??
+          [],
+      nextPage: json['nextPage'] ?? 1,
+      hasMore: json['hasMore'] ?? false,
     );
   }
 }

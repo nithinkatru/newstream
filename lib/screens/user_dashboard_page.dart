@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'appeals_and_disputes_page.dart';
-import 'admin_analytics_page.dart';
+import '../appeals_and_disputes_page.dart';
+import '../admin_analytics_page.dart';
 
 class UserDashboardPage extends StatelessWidget {
 

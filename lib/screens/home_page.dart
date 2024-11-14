@@ -1,16 +1,17 @@
-// lib/home_page.dart
+// lib/screens/home_page.dart
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:carousel_slider/carousel_slider.dart';
-// Removed: import 'package:another_flushbar/flushbar.dart';
-import 'models/video.dart';
-import 'models/dashboard_response.dart';
-import 'services/api_service.dart';
+import '../models/video.dart';
 import 'video_player_page.dart' as player;
 import 'profile_page.dart';
 import 'video_upload_page.dart' as upload;
 import 'user_dashboard_page.dart';
+import '../widgets/video_card.dart';
+import '../routes/app_routes.dart';
+import 'search_page.dart'; // Import to access dummyVideos
 
 enum BottomNavItem { Home, Library, Browse, Subscriptions, Dashboard }
 
@@ -22,51 +23,13 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   BottomNavItem _currentNavItem = BottomNavItem.Home;
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final ApiService _apiService = ApiService();
 
   // Data Variables
   List<Video> _videos = [];
-  int _currentPage = 0;
   bool _isLoading = false;
-  bool _hasMore = true;
+  bool _hasMore = false; // No more data to load
 
-  // Dummy Videos with dummy thumbnails from picsum.photos
-  final List<Video> dummyVideos = [
-    Video(
-      videoId: '1',
-      title: 'Dummy Video 1',
-      channelId: 'channel_1',
-      channelName: 'Sample Channel 1',
-      views: '1K',
-      publishedAt: '2024-11-02',
-      thumbnail: 'https://picsum.photos/seed/video1/400/225',
-      videoUrl: 'https://pixabay.com/videos/download/video-27821_medium.mp4',
-      description: 'A sample video for demonstration purposes.',
-    ),
-    Video(
-      videoId: '2',
-      title: 'Dummy Video 2',
-      channelId: 'channel_2',
-      channelName: 'Sample Channel 2',
-      views: '2K',
-      publishedAt: '2024-11-03',
-      thumbnail: 'https://picsum.photos/seed/video2/400/225',
-      videoUrl: 'https://pixabay.com/videos/download/video-15554_medium.mp4',
-      description: 'Another sample video for demonstration.',
-    ),
-    Video(
-      videoId: '3',
-      title: 'Dummy Video 3',
-      channelId: 'channel_3',
-      channelName: 'Sample Channel 3',
-      views: '3K',
-      publishedAt: '2024-11-04',
-      thumbnail: 'https://picsum.photos/seed/video3/400/225',
-      videoUrl: 'https://pixabay.com/videos/download/video-14275_medium.mp4',
-      description: 'A third sample video for demo purposes.',
-    ),
-  ];
-
+  // Categories and Genres
   final List<String> categories = [
     'Movies',
     'TV Shows',
@@ -139,7 +102,7 @@ class _HomePageState extends State<HomePage> {
   void _onProfileTap() {
     final user = _auth.currentUser;
     if (user == null) {
-      Navigator.pushNamed(context, '/login');
+      Navigator.pushNamed(context, AppRoutes.login);
     } else {
       Navigator.push(
         context,
@@ -213,15 +176,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void _onPlaylistTap(String playlistTitle) {
-    _showSnackBar(
-      'Playlist Selected',
-      'You selected "$playlistTitle"',
-      Colors.green,
-      FontAwesomeIcons.list,
-    );
-  }
-
   void _onUploadVideoTap() {
     Navigator.push(
       context,
@@ -238,33 +192,61 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _fetchDashboardData() async {
-    if (_isLoading || !_hasMore) return;
-
     setState(() {
       _isLoading = true;
     });
 
     try {
-      DashboardResponse response = await _apiService.fetchDashboard(page: _currentPage);
+      // Use dummyVideos from search_page.dart
       setState(() {
-        if (response.videos.isNotEmpty) {
-          _videos.addAll(response.videos);
-          _currentPage = response.nextPage;
-          _hasMore = response.hasMore;
-        } else {
-          _videos = dummyVideos;
-        }
+        _videos = dummyVideos; // Now using the imported dummyVideos
+        _hasMore = false; // No more data to load
       });
     } catch (e) {
-      setState(() {
-        _videos = dummyVideos;
-      });
+      _showSnackBar('Error', 'Failed to load videos.', Colors.red, Icons.error);
     } finally {
       setState(() {
         _isLoading = false;
       });
     }
   }
+
+  // Define dummyVideos here to avoid circular imports
+  final List<Video> dummyVideos = [
+    Video(
+      videoId: '1',
+      title: 'Dummy Video 1',
+      channelId: 'channel_1',
+      channelName: 'Sample Channel 1',
+      views: '1K',
+      publishedAt: '2024-11-02',
+      thumbnail: 'https://picsum.photos/seed/video1/400/225',
+      videoUrl: 'https://pixabay.com/videos/download/video-27821_medium.mp4',
+      description: 'A sample video for demonstration purposes.',
+    ),
+    Video(
+      videoId: '2',
+      title: 'Dummy Video 2',
+      channelId: 'channel_2',
+      channelName: 'Sample Channel 2',
+      views: '2K',
+      publishedAt: '2024-11-03',
+      thumbnail: 'https://picsum.photos/seed/video2/400/225',
+      videoUrl: 'https://pixabay.com/videos/download/video-15554_medium.mp4',
+      description: 'Another sample video for demonstration.',
+    ),
+    Video(
+      videoId: '3',
+      title: 'Dummy Video 3',
+      channelId: 'channel_3',
+      channelName: 'Sample Channel 3',
+      views: '3K',
+      publishedAt: '2024-11-04',
+      thumbnail: 'https://picsum.photos/seed/video3/400/225',
+      videoUrl: 'https://pixabay.com/videos/download/video-14275_medium.mp4',
+      description: 'A third sample video for demo purposes.',
+    ),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -315,12 +297,6 @@ class _HomePageState extends State<HomePage> {
               _buildSectionTitle('Recommendations'),
               _buildVideoList(_videos),
               SizedBox(height: 20),
-              if (_hasMore)
-                ElevatedButton(
-                  onPressed: _fetchDashboardData,
-                  child: _isLoading ? CircularProgressIndicator() : Text('Load More'),
-                ),
-              SizedBox(height: 20),
               _buildSubscriptionDetails(),
               SizedBox(height: 20),
               _buildAccountDetails(),
@@ -365,6 +341,8 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildSearchBar() {
+    TextEditingController _searchController = TextEditingController();
+
     return Container(
       height: 40,
       decoration: BoxDecoration(
@@ -372,13 +350,34 @@ class _HomePageState extends State<HomePage> {
         borderRadius: BorderRadius.circular(20),
       ),
       child: TextField(
+        controller: _searchController,
         decoration: InputDecoration(
           hintText: 'Search for videos, movies, or series',
           border: InputBorder.none,
           prefixIcon: Icon(Icons.search, color: Colors.grey),
+          suffixIcon: IconButton(
+            icon: Icon(Icons.clear, color: Colors.grey),
+            onPressed: () {
+              _searchController.clear();
+            },
+          ),
         ),
+        textInputAction: TextInputAction.search,
         onSubmitted: (value) {
-          _showSnackBar('Search', 'You searched for "$value"', Colors.blueAccent, FontAwesomeIcons.search);
+          if (value.trim().isNotEmpty) {
+            Navigator.pushNamed(
+              context,
+              AppRoutes.search,
+              arguments: {'query': value.trim()},
+            );
+          } else {
+            _showSnackBar(
+              'Empty Search',
+              'Please enter a search term.',
+              Colors.orange,
+              Icons.warning,
+            );
+          }
         },
       ),
     );
@@ -488,6 +487,23 @@ class _HomePageState extends State<HomePage> {
                       image: DecorationImage(
                         image: NetworkImage(video.thumbnail),
                         fit: BoxFit.cover,
+                      ),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(
+                        video.thumbnail,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            color: Colors.grey[300],
+                            child: Icon(Icons.broken_image, color: Colors.grey[700], size: 50),
+                          );
+                        },
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Center(child: CircularProgressIndicator());
+                        },
                       ),
                     ),
                   ),
