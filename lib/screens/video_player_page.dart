@@ -1,5 +1,5 @@
+import 'dart:async';
 import 'dart:io';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
@@ -16,6 +16,7 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
   late VideoPlayerController _controller;
   bool _isBuffering = true;
   bool _hasError = false;
+  bool _controlsVisible = false;  // Start with controls hidden
 
   @override
   void initState() {
@@ -25,8 +26,7 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
 
   Future<void> _initializeVideoPlayer() async {
     try {
-
-      _controller = (kIsWeb || widget.videoPath.startsWith('http'))
+      _controller = (widget.videoPath.startsWith('http') || widget.videoPath.startsWith('https'))
           ? VideoPlayerController.network(widget.videoPath)
           : VideoPlayerController.file(File(widget.videoPath));
 
@@ -40,7 +40,7 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
         _hasError = true;
         _isBuffering = false;
       });
-      print("Error initializing video player: $error"); // Log error
+      print("Error initializing video player: $error");
     }
   }
 
@@ -67,24 +67,90 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
       appBar: AppBar(
         title: Text('Video Player'),
       ),
-      body: Center(
-        child: _isBuffering
-            ? CircularProgressIndicator()
-            : _controller.value.isInitialized
-            ? AspectRatio(
-          aspectRatio: _controller.value.aspectRatio,
-          child: VideoPlayer(_controller),
-        )
-            : Container(),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          setState(() {
-            _controller.value.isPlaying ? _controller.pause() : _controller.play();
-          });
+      body: MouseRegion(
+        onEnter: (_) {
+          _setControlsVisibility(true);
         },
-        child: Icon(
-          _controller.value.isPlaying ? Icons.pause : Icons.play_arrow,
+        onExit: (_) {
+          _setControlsVisibility(false);
+        },
+        child: Container(
+          color: Colors.black, // Black background
+          child: Center(
+            child: _isBuffering
+                ? CircularProgressIndicator()
+                : _controller.value.isInitialized
+                ? AspectRatio(
+              aspectRatio: _controller.value.aspectRatio,
+              child: Stack(
+                alignment: Alignment.bottomCenter,
+                children: [
+                  VideoPlayer(_controller),
+                  _buildControls(context),
+                ],
+              ),
+            )
+                : Container(),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _setControlsVisibility(bool visible) {
+    setState(() {
+      _controlsVisible = visible;
+    });
+  }
+
+  Widget _buildControls(BuildContext context) {
+    return AnimatedOpacity(
+      opacity: _controlsVisible ? 1.0 : 0.0,
+      duration: Duration(milliseconds: 300),
+      child: Container(
+        height: 50,
+        color: Colors.black26,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: <Widget>[
+            IconButton(
+              icon: Icon(Icons.replay_10),
+              color: Colors.white,
+              onPressed: () {
+                _controller.seekTo(
+                  _controller.value.position - Duration(seconds: 10),
+                );
+              },
+            ),
+            IconButton(
+              icon: Icon(_controller.value.isPlaying ? Icons.pause : Icons.play_arrow),
+              color: Colors.white,
+              onPressed: () {
+                setState(() {
+                  _controller.value.isPlaying ? _controller.pause() : _controller.play();
+                });
+              },
+            ),
+            IconButton(
+              icon: Icon(Icons.forward_10),
+              color: Colors.white,
+              onPressed: () {
+                _controller.seekTo(
+                  _controller.value.position + Duration(seconds: 10),
+                );
+              },
+            ),
+            Expanded(
+              child: VideoProgressIndicator(_controller, allowScrubbing: true),
+            ),
+            IconButton(
+              icon: Icon(Icons.volume_up),
+              color: Colors.white,
+              onPressed: () {
+                // Increment volume code here
+              },
+            ),
+          ],
         ),
       ),
     );

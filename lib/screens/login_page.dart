@@ -24,7 +24,7 @@ class _LoginPageState extends State<LoginPage>
   void initState() {
     super.initState();
 
-    // Initialize Animation Controller
+
     _animationController = AnimationController(
       vsync: this,
       duration: Duration(milliseconds: 800),
